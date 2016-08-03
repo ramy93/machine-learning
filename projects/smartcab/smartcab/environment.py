@@ -46,7 +46,7 @@ class Environment(object):
         self.block_size = 100
         self.intersections = OrderedDict()
         self.roads = []
-        for x in xrange(self.bounds[0], self.bounds[2] + 1):
+        for x in xrange(self.bounds[0] , self.bounds[2] + 1):
             for y in xrange(self.bounds[1], self.bounds[3] + 1):
                 self.intersections[(x, y)] = TrafficLight()  # a traffic light at each intersection
 
