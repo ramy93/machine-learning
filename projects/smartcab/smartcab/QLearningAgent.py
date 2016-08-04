@@ -32,7 +32,7 @@ class QLearningAgent(Agent):
         deadline = self.env.get_deadline(self)
 
         # TODO: Update state
-        learner.update()
+        self.learner.update()
         # TODO: Select action according to your policy
         action = None
 
