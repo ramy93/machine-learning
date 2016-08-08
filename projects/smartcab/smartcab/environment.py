@@ -237,7 +237,7 @@ class Agent(object):
         pass
 
     def get_state(self):
-        return self.state
+        return self.env.agent_states[self]
 
     def get_next_waypoint(self):
         return self.next_waypoint
