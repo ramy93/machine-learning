@@ -33,5 +33,7 @@ class LearningAgent(Agent):
         # Execute action and get reward
         reward = self.env.act(self, action)
         # TODO: Learn policy based on state, action, reward
-
-        print "LearningAgent.update(): deadline = {}, inputs = {}, action = {}, reward = {}".format(deadline, inputs, action, reward)  # [debug]
+        print "LearningAgent.update(): deadline = {}\n, inputs = {}\n, action = {}\n, reward = {}\n".format(deadline,
+                                                                                                            inputs,
+                                                                                                            action,
+                                                                                                            reward)
