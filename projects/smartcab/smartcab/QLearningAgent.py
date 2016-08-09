@@ -27,6 +27,7 @@ class QLearningAgent(Agent):
 
     def reset(self, destination=None):
         self.simple_planner.route_to(destination)
+        self.planner.route_to(destination)
         # TODO: Prepare for a new trip; reset any variables here, if required
 
     def update(self, t):
