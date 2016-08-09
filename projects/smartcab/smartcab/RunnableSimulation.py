@@ -1,35 +1,33 @@
 __author__ = 'ramy93'
 
-from environment import Environment
-
 from agent import LearningAgent
-from planner import RoutePlanner
 from simulator import Simulator
+from environment import Environment
 import QLearningAgent
 
 class RunnableSimulation:
 
-    def __init__(self):
-        pass
+    def __init__(self, update_delay=0.5, display=True, n_trials=100):
+        self.display = display
+        self.update_delay = update_delay
+        self.n_trials = n_trials
 
-    def run(self):
+    def run(self, environment):
         """Run the agent for a finite number of trials."""
-        # Set up environment and agent
-        e = Environment()  # create environment (also adds some dummy traffic)
-        a = e.create_agent(LearningAgent)  # create agent
-        e.set_primary_agent(a, enforce_deadline=True)  # specify agent to track
-        # NOTE: You can set enforce_deadline=False while debugging to allow longer trials
-
-        # Now simulate it
-        sim = Simulator(e, update_delay=0.5, display=True)  # create simulator (uses pygame when display=True, if available)
+        sim = Simulator(environment, None, self.update_delay, self.display)  # create simulator (uses pygame when display=True, if available)
         # NOTE: To speed up simulation, reduce update_delay and/or set display=False
 
-        sim.run(n_trials=100)  # run for a specified number of trials
+        sim.run(self.n_trials)  # run for a specified number of trials
         # NOTE: To quit midway, press Esc or close pygame window, or hit Ctrl+C on the command-line
 
 
 if __name__ == '__main__':
-    simulation = RunnableSimulation()
+    env = Environment()
+    a = env.create_agent(LearningAgent)
+    env.set_primary_agent(a, enforce_deadline=True)
+    # NOTE: You can set enforce_deadline=False while debugging to allow longer trials
+
+    simulation = RunnableSimulation(env)
     simulation.run()
 
 
