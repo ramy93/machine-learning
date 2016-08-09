@@ -1,13 +1,23 @@
 import random
 
-class RoutePlanner(object):
-    """Silly route planner that is meant for a perpendicular grid network."""
 
+class Planner:
     def __init__(self, env, agent):
         self.env = env
         self.agent = agent
         self.destination = None
 
+    # method to be overriden by all subclasses
+    def next_waypoint(self):
+        pass
+
+    # method to be overriden by intelligent planners
+    def update(self):
+        pass
+
+
+class RoutePlanner(Planner):
+    """Silly route planner that is meant for a perpendicular grid network."""
     def route_to(self, destination=None):
         self.destination = destination if destination is not None else random.choice(self.env.intersections.keys())
         print "RoutePlanner.route_to(): destination = {}".format(destination)  # [debug]
@@ -36,3 +46,29 @@ class RoutePlanner(object):
                 return 'right'
             else:
                 return 'left'
+
+
+class IntelligentPlanner(Planner):
+
+    def __init__(self, env, agent, learner=None):
+        Planner.__init__(self, env, agent)
+        self.learner = learner
+
+    def set_learner(self, learner):
+        self.learner = learner
+
+    def update(self):
+        action = self.next_waypoint()
+        reward = self.env.act(self.agent, action)
+        deadline = self.env.get_deadline(self.agent)
+
+        inputs = self.env.sense(self.agent)
+        state = self.env.agent_states[self.agent]
+        print "deadline: {}\ninputs: {}\naction : {}\nreward: {}\ntime: {}\nstate: {}".format(deadline, inputs, action,
+                                                                                              reward, self.env.t, state)
+        pass
+
+    # TODO: implement intelligent get_next_move
+    def next_waypoint(self):
+        return random.choice(self.env.valid_actions)
+
