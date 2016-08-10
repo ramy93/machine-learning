@@ -37,7 +37,6 @@ class QLearningAgent(Agent):
         # TODO: Select action according to your policy
 
         # TODO: Learn policy based on state, action, reward
-        print "Updating Learning agent: "
         self.planner.update()
 
     def set_planner(self, planner):
