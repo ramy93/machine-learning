@@ -1,4 +1,6 @@
 import numpy as np
+
+
 class QTable:
     def __init__(self, state_dictionary, action_dictionary):
         self.state_dictionary = state_dictionary
@@ -9,8 +11,7 @@ class QTable:
         self.all_states = self.state_dictionary.keys() + self.action_dictionary.keys()
         self.num_all_states = self.num_state_variables + self.num_action_variables
 
-
-        self.sub_state_reference = np.zeros(range(self.num_all_states))
+        self.sub_state_reference = range(self.num_all_states)
 
         index = 0
         for key in self.all_states:
@@ -18,22 +19,19 @@ class QTable:
                 state_values = self.state_dictionary[key]
             else:
                 state_values = self.action_dictionary[key]
-            self.sub_state_reference[index] = self.SubState(key, state_values)
-        '''
-        for i in state_dictionary.keys():
-            sub_state = self.SubState(i, state_dictionary[i])
-            self.state_index[sub_state.get_substate_name()] = index
-            self.index_state[index] = sub_state
-        '''
-        self.QTable = np.zeros([state.get_num_values for state in self.sub_state_reference])
+            new_sub_state = self.SubState(key, state_values)
+            self.sub_state_reference[index] = new_sub_state
+            index += 1
 
-    def get_value(self, state_and_values, action_dictionary):
+        self.table = np.zeros([state.get_num_values() for state in self.sub_state_reference])
+
+    def get_index(self, state_and_values, action_dictionary):
         if len(state_and_values) + len(action_dictionary) != self.num_all_states:
-            raise Exception ("Invalid state requested!")
+            raise Exception("Invalid state requested!")
 
         location = range(self.num_all_states)
-        index = 0
 
+        index = 0
         for sub_state in self.sub_state_reference:
             key = sub_state.get_name()
             if key in state_and_values.keys():
@@ -41,9 +39,19 @@ class QTable:
             else:
                 state_value = action_dictionary[key]
             value = sub_state.get_value_index(state_value)
-            location[index]=value
-        index += 1
-        return self.QTable[tuple(location)]
+
+            location[index] = value
+            index += 1
+        return tuple(location)
+
+    def get_value(self, state_and_values, action_dictionary):
+        print action_dictionary
+        print self.table[self.get_index(state_and_values, action_dictionary)]
+        return self.table[self.get_index(state_and_values, action_dictionary)]
+
+    def set_value(self, state_and_values, action_dictionary, value):
+        index = self.get_index(state_and_values, action_dictionary)
+        self.table[index] = value
 
     class SubState:
         def __init__(self, substate_name, substate_values):
