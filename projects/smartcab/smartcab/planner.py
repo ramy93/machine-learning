@@ -75,7 +75,7 @@ class IntelligentPlanner(Planner):
         #return random.choice(self.env.valid_actions)
 
     def get_next_waypoint(self, state, actions):
-        deadline = self.env.get_deadline()
+        deadline = self.env.get_deadline(self.agent)
         if deadline is None:
             temperature_subtraction = 30 * self.env.t
             if temperature_subtraction > 500 :
@@ -83,7 +83,7 @@ class IntelligentPlanner(Planner):
             else:
                 temperature = 0.1
         else:
-            temperature = 400 * (self.env.get_deadline()) + 1
+            temperature = 400 * (self.env.get_deadline(self.agent)) + 1
 
         values = np.array([np.exp(self.learner.get_value(state, action)/temperature) for action in actions])
         values = values / np.sum(values)
