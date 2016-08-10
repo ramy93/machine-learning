@@ -17,7 +17,6 @@ class Planner:
 
     def route_to(self, destination=None):
         self.destination = destination if destination is not None else random.choice(self.env.intersections.keys())
-        print "RoutePlanner.route_to(): destination = {}".format(destination)  # [debug]
 
 class RoutePlanner(Planner):
     """Silly route planner that is meant for a perpendicular grid network."""
@@ -60,14 +59,19 @@ class IntelligentPlanner(Planner):
 
     def update(self):
         action = self.next_waypoint()
+        old_state = self.env.agent_states[self.agent].copy()
+        old_inputs = self.env.sense(self.agent).copy()
+
         reward = self.env.act(self.agent, action)
         deadline = self.env.get_deadline(self.agent)
 
         inputs = self.env.sense(self.agent)
         state = self.env.agent_states[self.agent]
-        print "deadline: {}\ninputs: {}\naction : {}\nreward: {}\ntime: {}\nstate: {}".format(deadline, inputs, action,
-                                                                                              reward, self.env.t, state)
-        pass
+
+        self.learner.update(old_state, action, reward, state)
+        #print "deadline: {}\ninputs: {}\naction : {}\nreward: {}\ntime: {}\nstate: {}".format(deadline, inputs, action,
+        #                                                                                      reward, self.env.t, state)
+        return
 
     # TODO: implement intelligent get_next_move
     def next_waypoint(self):
@@ -77,17 +81,17 @@ class IntelligentPlanner(Planner):
     def get_next_waypoint(self, state, actions):
         deadline = self.env.get_deadline(self.agent)
         if deadline is None:
+
             temperature_subtraction = 30 * self.env.t
-            if temperature_subtraction > 500 :
-                temperature = 500 - self.env.t
+            if temperature_subtraction < 500 :
+                temperature = 500 - temperature_subtraction
             else:
                 temperature = 0.1
         else:
-            temperature = 400 * (self.env.get_deadline(self.agent)) + 1
+            temperature =  (self.env.get_deadline(self.agent)) + 1
 
         values = np.array([np.exp(self.learner.get_value(state, action)/temperature) for action in actions])
         values = values / np.sum(values)
-        print values
         index = np.where(np.random.multinomial(1, values))[0][0]
         return actions[index]
 
