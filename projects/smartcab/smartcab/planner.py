@@ -70,12 +70,8 @@ class IntelligentPlanner(Planner):
             elif key in self.planning_heuristics:
                 old_state[key] = self.get_heuristic_value(self.planning_heuristics[key])
 
-        #print self.agent.get_state(), 'Old state before action gotten'
         action = self.get_next_waypoint(old_state, self.env.valid_actions)
-        #print self.agent.get_state(), 'Old state after action gotten'
         reward = self.env.act(self.agent, action)
-        #print self.agent.get_state(), 'New state'
-        #print
         inputs = self.env.sense(self.agent)
         state = {}
         for key in self.learner.get_states():
@@ -91,7 +87,6 @@ class IntelligentPlanner(Planner):
 
         return
 
-    # TODO: implement intelligent get_next_move
     def next_waypoint(self):
         return self.get_next_waypoint(self.agent.get_state(), self.env.valid_actions)
         #return random.choice(self.env.valid_actions)
@@ -99,23 +94,15 @@ class IntelligentPlanner(Planner):
     def get_next_waypoint(self, state, actions):
         deadline = self.env.get_deadline(self.agent)
         if deadline is None:
-
             temperature_subtraction = 30 * self.env.t
             if temperature_subtraction < 500 :
                 temperature = 500 - temperature_subtraction
             else:
                 temperature = 0.1
         else:
-            #temperature =  (self.env.get_deadline(self.agent))*0.4 + .1
             self.temperature = max(self.temperature*0.99, 0.1)
-        #print actions , 'All actions to consider'
-        debug_values = [self.learner.get_value(state, action) for action in actions]
-        #print debug_values, 'Q values at action getting..without temperature changes'
         values = np.array([np.exp(self.learner.get_value(state, action)/self.temperature) for action in actions])
-        #print
         values = values / np.sum(values)
-        #print values, 'Q values at action getting... with temperature changes'
-        #print
         index = np.where(np.random.multinomial(1, values))[0][0]
         return actions[index]
 
@@ -126,8 +113,8 @@ class IntelligentPlanner(Planner):
     def get_heuristic_value(self, heuristic):
         return heuristic.get_value()
 
-    def set_planner_statistics(self, planner_statistics):
-        self.planner_statistics = planner_statistics
+    def set_planner_statistics(self, planner_statistics_implementation):
+        self.planner_statistics = planner_statistics_implementation
 
     class Heuristic:
         def __init__(self, heuristic_name, method):
@@ -147,38 +134,34 @@ class planner_statistics:
         self.weighted = weighted
     def update(self, agent):
         agent_state = agent.get_state()
-        #print 'stats updating' , self.results, agent_state['destination'], agent_state['location'], agent_state['deadline']
-        #print agent_state['destination'][0] == agent_state['location'][0] and agent_state['destination'][1] == agent_state['location'][1]
         if agent_state['destination'][0] == agent_state['location'][0] and agent_state['destination'][1] == agent_state['location'][1]:
             if not self.weighted:
                 self.results.append(1)
             else:
                 self.results.append(max(1*agent.get_state()['deadline'],1))
             return
-        if ( agent.get_state()['deadline']<=0):
+        if agent.get_state()['deadline']<=0:
             self.results.append(0)
             return
-
         return
+
     def get_results(self):
         return self.results
 
-#method abstract class
+# method abstract class
 class Method:
     def __init__(self, agent, environment):
         self.agent = agent
         self.environment = environment
+
     def get_value(self):
         raise NotImplementedError("method not implemented for interface")
 
 
-
-class is_correct_y_direction(Method):
-    #true, false method
+class is_correct_y_direction(Method):  # true, false method
     def __init__(self, agent, environment):
         self.agent = agent
         self.environment = environment
-
 
     def get_value(self):
         state = self.agent.get_state()
@@ -221,11 +204,13 @@ class is_correct_x_diretion(Method):
             return False
         return True
 
+
 class agent_traffic_light(Method):
-    #[red, green] method
+    # [red, green] method
     def __init__(self, agent, environment):
         self.agent = agent
         self.environment = environment
+
     def get_value(self):
         state = self.environment.sense(self.agent)
         traffic_light = state['light']
@@ -236,8 +221,10 @@ class simple_planner_output(Method):
     def __init__(self, agent, environment):
         self.agent = agent
         self.environment = environment
+
     def get_value(self):
         return self.agent.next_waypoint
+
 
 class agent_oncoming(Method):
     def __init__(self, agent, environment):
@@ -247,12 +234,14 @@ class agent_oncoming(Method):
     def get_value(self):
         return self.environment.sense(self.agent)['oncoming']
 
+
 class agent_left_check(Method):
     def __init__(self, agent, environment):
         Method.__init__(self, agent, environment)
 
     def get_value(self):
         return self.environment.sense(self.agent)['left']
+
 
 class agent_right_check(Method):
     def __init__(self, agent, environment):
