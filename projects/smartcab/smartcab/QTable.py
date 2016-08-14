@@ -26,8 +26,6 @@ class QTable:
         self.table = np.zeros([state.get_num_values() for state in self.sub_state_reference])
 
     def get_index(self, state_and_values, action_dictionary):
-        if len(state_and_values) + len(action_dictionary) != self.num_all_states:
-            raise Exception("Invalid state requested!")
 
         location = range(self.num_all_states)
 
@@ -45,13 +43,19 @@ class QTable:
         return tuple(location)
 
     def get_value(self, state_and_values, action_dictionary):
-        print action_dictionary
-        print self.table[self.get_index(state_and_values, action_dictionary)]
-        return self.table[self.get_index(state_and_values, action_dictionary)]
+        #print 'getting value', action_dictionary
+        val = self.table[self.get_index(state_and_values, action_dictionary)]
+        return val
 
     def set_value(self, state_and_values, action_dictionary, value):
         index = self.get_index(state_and_values, action_dictionary)
+        #print 'setting value',value,' to index',  index, ' and action is ' , action_dictionary, ''
+
         self.table[index] = value
+        #print self.table
+        #print
+        return
+        #print self.table[index]
 
     class SubState:
         def __init__(self, substate_name, substate_values):
